@@ -19,4 +19,9 @@ export class AppController {
   hello() {
     return 'con /sas/';
   }
+
+  @Get('tasks') // 👈 new endpoint
+  tasks() {
+    return this.appService.getTasks();
+  }
 }

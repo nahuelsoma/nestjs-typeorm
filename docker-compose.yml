@@ -3,6 +3,7 @@ services:
   # Se suele llamar a los servicios como la base de datos que están corriendo
   postgres:
     # Postgres en la version 13
+    container_name: postgres
     image: postgres:13
     # Variables de entorno para correr la base de datos en un contenedor
     environment:
@@ -12,10 +13,13 @@ services:
       - POSTGRES_PASSWORD=123456
     # Puerto donde se correrá el contenedor de docker
     ports:
-      - '5432:5432'
+      - '5432:5432' # Acá le decimos que dentro del contenedor el puerto que usará es el 5432 y para que nosotros usemos fuera del contenedor le decimo que exponga el puerto 5433
+
     # Volumen donde persistirán los datos almacenados en la base de datos que corre el contenedor. Ignorar esta carpeta en el .gitignore.
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./postgres_data:/var/lib/postgresql/data
+    networks:
+      - postgres
   # volumes:
   #   postgres_data: {}
 
@@ -31,3 +35,10 @@ services:
       - PGADMIN_DEFAULT_PASSWORD=root
     ports:
       - '5050:80'
+    networks:
+      - postgres
+
+networks:
+  postgres:
+    driver: bridge
+
