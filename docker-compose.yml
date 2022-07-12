@@ -1,0 +1,33 @@
+version: '3.3'
+services:
+  # Se suele llamar a los servicios como la base de datos que están corriendo
+  postgres:
+    # Postgres en la version 13
+    image: postgres:13
+    # Variables de entorno para correr la base de datos en un contenedor
+    environment:
+      # Nombre de la base de datos
+      - POSTGRES_DB=my_db
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=123456
+    # Puerto donde se correrá el contenedor de docker
+    ports:
+      - '5432:5432'
+    # Volumen donde persistirán los datos almacenados en la base de datos que corre el contenedor. Ignorar esta carpeta en el .gitignore.
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  # volumes:
+  #   postgres_data: {}
+
+  # -------------------------------------------------------------------
+
+  # Se añade la configuración de pgadmin
+  pgadmin:
+    # Para tener un entorno web para gestionar postgres
+    image: dpage/pgadmin4
+    # Se configura el usuario
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=root@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+    ports:
+      - '5050:80'
