@@ -1,44 +1,74 @@
 version: '3.3'
 services:
-  # Se suele llamar a los servicios como la base de datos que están corriendo
-  postgres:
-    # Postgres en la version 13
-    container_name: postgres
-    image: postgres:13
-    # Variables de entorno para correr la base de datos en un contenedor
-    environment:
-      # Nombre de la base de datos
+
+  # Postgres configuration
+  postgres: # Container name
+    container_name: postgres # Postgres version 13
+    image: postgres:13 # Postgres image from docker hub
+    environment: # Env variables for container database
       - POSTGRES_DB=my_db
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=123456
-    # Puerto donde se correrá el contenedor de docker
-    ports:
-      - '5432:5432' # Acá le decimos que dentro del contenedor el puerto que usará es el 5432 y para que nosotros usemos fuera del contenedor le decimo que exponga el puerto 5433
-
-    # Volumen donde persistirán los datos almacenados en la base de datos que corre el contenedor. Ignorar esta carpeta en el .gitignore.
-    volumes:
-      - ./postgres_data:/var/lib/postgresql/data
+    ports: # Docker container port
+      - '5432:5432'
+    volumes: # Volume to save data
+      - ./postgres_data:/var/lib/postgresql/data # Ignore folder in .gitignore file
     networks:
       - postgres
-  # volumes:
-  #   postgres_data: {}
 
-  # -------------------------------------------------------------------
+# ----------------------------------------------------------------------------------
 
-  # Se añade la configuración de pgadmin
-  pgadmin:
-    # Para tener un entorno web para gestionar postgres
+  # pgAdmin configuration
+  pgadmin: # Browser environment for Postgres database management
     image: dpage/pgadmin4
-    # Se configura el usuario
-    environment:
+    environment: # User configuration
       - PGADMIN_DEFAULT_EMAIL=root@admin.com
       - PGADMIN_DEFAULT_PASSWORD=root
     ports:
       - '5050:80'
+    depends_on:
+      - postgres
     networks:
       - postgres
 
+# ----------------------------------------------------------------------------------
+
+  # MySQL configuration
+  mysql:
+    container_name: mysql
+    image: mysql:8
+    environment:
+      - MYSQL_DATABASE=my_db
+      - MYSQL_USER=root
+      - MYSQL_ROOT_PASSWORD=123456
+    ports:
+      - '3306:3306'
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+    networks:
+      - mysql
+
+# ----------------------------------------------------------------------------------
+
+  # pgAdmin configuration
+  phpmyadmin: # Browser environment for MySQL database management
+    image: phpmyadmin/phpmyadmin
+    environment: # User configuration
+      # - EMAIL=root@admin.com
+      - MYSQL_ROOT_PASSWORD=root
+      - PMA_HOST=mysql
+    ports:
+      - '8080:80'
+    depends_on:
+      - mysql
+    networks:
+      - mysql
+
+# ----------------------------------------------------------------------------------
+
 networks:
   postgres:
+    driver: bridge
+  mysql:
     driver: bridge
 

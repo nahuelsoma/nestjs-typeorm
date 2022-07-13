@@ -1,28 +1,22 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm'; // import for database connection
+import { Repository } from 'typeorm'; // import for database connection
 
 import { Product } from './../entities/product.entity';
 import { CreateProductDto, UpdateProductDto } from './../dtos/products.dtos';
 
 @Injectable()
 export class ProductsService {
-  private counterId = 1;
-  private products: Product[] = [
-    {
-      id: 1,
-      name: 'Producto 1',
-      description: 'lorem lorem',
-      price: 10000,
-      stock: 300,
-      image: 'https://i.imgur.com/U4iGx1j.jpeg',
-    },
-  ];
+  constructor(
+    @InjectRepository(Product) private productRepo: Repository<Product>, // Inject repository
+  ) {}
 
   findAll() {
-    return this.products;
+    return this.productRepo.find(); // Use repository to find all info in this table
   }
 
-  findOne(id: number) {
-    const product = this.products.find((item) => item.id === id);
+  async findOne(id: number) {
+    const product = await this.productRepo.findOneBy({ id }); // Use repository to find a row in this table
     if (!product) {
       throw new NotFoundException(`Product #${id} not found`);
     }
@@ -30,31 +24,26 @@ export class ProductsService {
   }
 
   create(data: CreateProductDto) {
-    this.counterId = this.counterId + 1;
-    const newProduct = {
-      id: this.counterId,
-      ...data,
-    };
-    this.products.push(newProduct);
-    return newProduct;
+    // const newProduct = new Product();
+
+    // newProduct.name = data.name;  // In this case, each atribute must be written
+    // newProduct.description = data.description;
+    // newProduct.price = data.price;
+    // newProduct.stock = data.stock;
+    // newProduct.image = data.image;
+
+    const newProduct = this.productRepo.create(data); // In this case, an instance of productRepo is created with all atributes included
+
+    return this.productRepo.save(newProduct); // New product is saved in database
   }
 
-  update(id: number, changes: UpdateProductDto) {
-    const product = this.findOne(id);
-    const index = this.products.findIndex((item) => item.id === id);
-    this.products[index] = {
-      ...product,
-      ...changes,
-    };
-    return this.products[index];
+  async update(id: number, changes: UpdateProductDto) {
+    const product = await this.productRepo.findOneBy({ id }); // Find element to be updated
+    this.productRepo.merge(product, changes); // Merge product with new data, saved in "product" variable
+    return this.productRepo.save(product); // Save on database
   }
 
   remove(id: number) {
-    const index = this.products.findIndex((item) => item.id === id);
-    if (index === -1) {
-      throw new NotFoundException(`Product #${id} not found`);
-    }
-    this.products.splice(index, 1);
-    return true;
+    return this.productRepo.delete(id);
   }
 }

@@ -1,5 +1,7 @@
 # Curso de NestJS: Persistencia de Datos con TypeORM
 
+En este archivo se detalla el procedimiento seguido en el curso para crear una API con Nest.js y TypeORM, utilizando bases de datos relacionales (Postgres y MySQL).
+
 # 01. Introducción
 
 ## Clase 01: ¿Ya terminaste el Curso de NestJS: Programación Modular?
@@ -201,13 +203,130 @@ Se crea un nuevo endpoint en el archivo _users.controller.ts_ para acceder a est
 
 ## Clase 09: ¿Qué es un ORM? Instalando y configurando TypeORM Module
 
+![alt text](https://raw.githubusercontent.com/typeorm/typeorm/master/resources/logo_big.png)
+
+https://typeorm.io/
+
+ORM: Object Relational Model
+
+Se utiliza typeORM ya que admite TypeScript por defecto
+
+```
+npm install --save @nestjs/typeorm typeorm
+```
+
+_(Utilizar --legacy-peer-deps en caso de que sea necesario)_
+
+Se realiza la conexión desde el módulo de _database.module.ts_.
+
+La configuración se realiza dentro de los imports ya que es un módulo en sí.
+
+Se debe exportar TypeOrmModule para permitir que sea utilizado por los servicios de la aplicación.
+
+Para verificar que todo funciona bien, correr el servidor en modo producción.
+
+```
+npm run start:dev
+```
+
+En el caso de que devuelva un error, ejecutar los siguientes comandos
+
+```
+npm uninstall rxjs --save
+npm install rxjs@7.2.0 --save
+```
+
 ## Clase 10: Creando tu primera entidad
+
+Se crea la entidad desde el archivo _product.entity.ts_
+
+Para conocer todas las posibilidades que existen para definir un parámetro, se puede acceder a la documentación de TypeORM:
+
+https://typeorm.io/entities
+
+Cada módulo se encarga de administrar una entidad, es por ello que hay que importarlo en el módulo correspondiente. En este caso, en _product.module.ts_.
 
 ## Clase 11: TypeORM: active record vs. repositories
 
+- Active record:
+  - El modelo tiene todo a cargo.
+  - Tiene la responsabilidad de hacer búsquedas y su instancia para salvar, crear o actualizar.
+
+```
+const product = new Product();
+product.name = "Product 1";
+await product.save();
+await product.remove();
+...
+await Product.findOne(1);
+```
+
+- Repositories:
+  - El modelo tiene como responsabilidad solo a sus atributos.
+  - El repository es el que se encarga de las operaciones como salvar, crear o actualizar.
+
+```
+const productRepo = connection.getRepository(Product);
+
+const product = new Product();
+product.name = "Product 1";
+
+await productRepo.save(product);
+await productRepo.remove(product);
+await productRepo.findOne(1);
+```
+
+**El modelo recomendado para Nest.js es el de repositories.**
+
+Se realiza la implementación en el archivo _product.service.ts_.
+
+Se corrigen los endpoints en el archivo _product.controller.ts_.
+
+Se deben corregir las inconsistencias que se van marcando en consola.
+
+También se configura el módulo de database para que la ejecución sea sincronizada con la base de datos, dentro del archivo _database.module.ts_.
+
+Para ver en detalle la documentación de TypeORM en el llamado a la base de datos, consultar:
+
+https://typeorm.io/#loading-from-the-database
+
 ## Clase 12: Crear, actualizar y eliminar
 
+Se escribe el código para crear, actualizar y eliminar en el archivo _product.service.ts_.
+
+Se verifican los endpoints desde _product.controller.ts_, pero generalmente no debería ser necesario actualizarlos.
+
 ## Clase 13: Cambiar a Mysql demo (opcional)
+
+1. Se crea un contenedor en docker con una base de datos MySQL y un administrador de bases de datos phpMyAdmin en el archivo _docker-compose.yml_.
+2. Se corren ambos contenedores desde la terminal
+
+```
+docker-compose up -d mysql
+docker-compose up -d phpmyadmin
+```
+
+Se agregan las variables de entorno en el archivo _.env_, _.prod.env_ y _.stag.env_.
+
+```
+MYSQL_DATABASE=my_db
+MYSQL_USER=root
+MYSQL_ROOT_PASSWORD=123456
+MYSQL_PORT=3306
+MYSQL_HOST=localhost
+```
+
+Se añade al archivo _config.ts_ la conexion a la base de datos de MySQL.
+
+Una vez añadida la configuración de la nueva base de datos, desde el archivo _database.module.ts_ se puede seleccionar la base de datos a utilizar.
+
+Para que funcione correctamente es necesario instalar el driver de mysql
+
+```
+npm i mysql2 --save
+```
+
+_(Utilizar --legacy-peer-deps en caso de que sea necesario)_
 
 # 04. Migraciones
 

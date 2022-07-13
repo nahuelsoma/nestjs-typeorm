@@ -9,7 +9,7 @@ export class BrandsService {
   private brands: Brand[] = [
     {
       id: 1,
-      name: 'Brand 1',
+      brand: 'Brand 1',
       image: 'https://i.imgur.com/U4iGx1j.jpeg',
     },
   ];
@@ -26,15 +26,15 @@ export class BrandsService {
     return product;
   }
 
-  create(data: CreateBrandDto) {
-    this.counterId = this.counterId + 1;
-    const newBrand = {
-      id: this.counterId,
-      ...data,
-    };
-    this.brands.push(newBrand);
-    return newBrand;
-  }
+  // create(data: CreateBrandDto) {
+  //   this.counterId = this.counterId + 1;
+  //   const newBrand = {
+  //     id: this.counterId,
+  //     ...data,
+  //   };
+  //   this.brands.push(newBrand);
+  //   return newBrand;
+  // }
 
   update(id: number, changes: UpdateBrandDto) {
     const brand = this.findOne(id);
