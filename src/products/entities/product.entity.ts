@@ -1,9 +1,15 @@
-import { PrimaryGeneratedColumn, Column, Entity } from 'typeorm';
+import {
+  PrimaryGeneratedColumn,
+  Column,
+  Entity,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 // PrimaryGeneratedColumn is used to auto generate the primary key (id)
 // Column is used to generate a new column
 // Entity is used to define an entity for TypeORM
 
-@Entity()
+@Entity({ name: 'products' })
 export class Product {
   @PrimaryGeneratedColumn()
   id: number;
@@ -23,4 +29,18 @@ export class Product {
 
   @Column({ type: 'varchar' })
   image: string;
+
+  // Add creation date
+  @CreateDateColumn({
+    type: 'timestamptz', // Add timestamp with time zone
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  createAt: Date;
+
+  // Add modified date
+  @UpdateDateColumn({
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  updateAt: Date;
 }

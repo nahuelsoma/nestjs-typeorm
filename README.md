@@ -306,7 +306,7 @@ docker-compose up -d mysql
 docker-compose up -d phpmyadmin
 ```
 
-Se agregan las variables de entorno en el archivo _.env_, _.prod.env_ y _.stag.env_.
+Se agregan las variables de entorno en los archivos _.env_, _.prod.env_ y _.stag.env_.
 
 ```
 MYSQL_DATABASE=my_db
@@ -332,11 +332,107 @@ _(Utilizar --legacy-peer-deps en caso de que sea necesario)_
 
 ## Clase 14: Sync Mode vs. Migraciones en TypeORM
 
+TypeORM migration definition:
+
+> A migration es just a single file with sql queries to **update a database schema and apply new changes** to an existing database.
+
 ## Clase 15: Configurando migraciones y npm scripts
+
+Se configuran las migraciones con TypeORM.
+
+https://orkhan.gitbook.io/typeorm/docs/using-cli
+
+https://typeorm.io/using-cli
+
+Se agregan las variables de entorno para realizar la conexión a la base de datos en Postgres desde TypeORM en los archivos _.env_, _.prod.env_ y _.stag.env_.
+
+```
+TYPEORM_CONNECTION=postgres
+TYPEORM_HOST=localhost
+TYPEORM_USERNAME=root
+TYPEORM_PASSWORD=123456
+TYPEORM_DATABASE=my_db
+TYPEORM_PORT=5432
+TYPEORM_SYNCHRONIZE=false
+TYPEORM_LOGGING=true
+TYPEORM_ENTITIES=src/**/*.entity.ts
+
+TYPEORM_MIGRATIONS=src/database/migrations/*.ts
+TYPEORM_MIGRATIONS_DIR=src/database/migrations
+TYPEORM_MIGRATIONS_TABLE_NAME=migrations
+```
+
+Se agregan dos scripts en el archivo _package.json_. El primero para correr TypeORM CLI desde node:
+
+```
+"typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
+```
+
+Utilizamos la tarea generada anteriormente en un nuevo script para generar las migraciones:
+
+```
+"migrations:generate": "npm run typeorm -- migration:generate -n"
+```
+
+Esta forma de utilizar las migraciones es válida hasta la versión 0.2.45 de TypeORM, por lo tanto correr los comandos:
+
+```
+npm remove typeorm
+npm install typeorm@0.2.45 --save
+```
+
+_(Utilizar --legacy-peer-deps en caso de que sea necesario)_
 
 ## Clase 16: Corriendo migraciones
 
+Para correr las migraciones se genera el script:
+
+```
+"migrations:run": "npm run typeorm -- migration:run",
+```
+
+Se debe tener en cuenta que al momento de correr migraciones, la propiedad _synchronize_ del archivo _database.module.ts_ debe estar en _false_.
+
+Para ver las migraciones que se han corrido hasta el momento:
+
+```
+
+"migrations:show": "npm run typeorm -- migration:show",
+```
+
+Para borrar todo, limpia la base de datos:
+
+```
+"migrations:drop": "npm run typeorm -- migration:drop"
+```
+
+Para revertir una migración:
+
+```
+"migrations:revert": "npm run typeorm -- migration:revert"
+```
+
+Para ver más comandos disponibles se puede consultar la documentación oficial:
+
+https://typeorm.io/migrations
+
 ## Clase 17: Modificando una entidad
+
+Se importa _CreateDateColumn_ y _UpdateDateColumn_ en el archivo _product.entity.ts_ para generar dos nuevas propiedades a la entidad _Product_.
+
+Para crear una nueva migracion, se corre en consola el comando:
+
+```
+npm run migrations:generate -- add-fields
+```
+
+Aquí se genera una nueva migración.
+
+Para correr la nueva migración:
+
+```
+npm run migrations:run
+```
 
 # 05. Relaciones
 

@@ -7,7 +7,7 @@ enum CategoryName {
   HEALTH = 'Health',
 }
 
-@Entity({ name: 'Categories' })
+@Entity({ name: 'categories' })
 export class Category {
   @PrimaryGeneratedColumn()
   id: number;

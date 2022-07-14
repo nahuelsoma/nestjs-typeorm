@@ -14,15 +14,15 @@ const API_KEY_PROD = 'PROD1212121SA';
     TypeOrmModule.forRootAsync({
       inject: [config.KEY],
       useFactory: (configService: ConfigType<typeof config>) => {
-        const { user, host, dbName, password, port } = configService.mysql; // Read configService for corresponding database (postgres, mysql)
+        const { user, host, dbName, password, port } = configService.postgres; // Read configService for corresponding database (postgres, mysql)
         return {
-          type: 'mysql', // Select database (postgres, mysql)
+          type: 'postgres', // Select database (postgres, mysql)
           host,
           port,
           username: user,
           password,
           database: dbName,
-          synchronize: true, // Synchronize database conection for table creation in dev mode. MUST BE false IN PROD MODE!
+          synchronize: false, // Synchronize database conection for table creation in dev mode. MUST BE false IN PROD MODE!
           autoLoadEntities: true, // Entities must be auto loaded
         };
       },
