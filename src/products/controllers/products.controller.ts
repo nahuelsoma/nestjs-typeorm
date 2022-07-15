@@ -12,7 +12,6 @@ import {
   Res,
   // ParseIntPipe,
 } from '@nestjs/common';
-
 import { Response } from 'express';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
@@ -54,20 +53,32 @@ export class ProductsController {
 
   @Post()
   create(@Body() payload: CreateProductDto) {
-    // return {
-    //   message: 'accion de crear',
-    //   payload,
-    // };
     return this.productsService.create(payload);
   }
 
   @Put(':id')
   update(@Param('id') id: number, @Body() payload: UpdateProductDto) {
-    return this.productsService.update(+id, payload);
+    return this.productsService.update(id, payload);
+  }
+
+  @Put(':id/category/:categoryId')
+  addCategoryToProduct(
+    @Param('id') id: number,
+    @Param('categoryId', ParseIntPipe) categoryId: number,
+  ) {
+    return this.productsService.addCategoryToProduct(id, categoryId);
   }
 
   @Delete(':id')
   delete(@Param('id') id: number) {
-    return this.productsService.remove(+id);
+    return this.productsService.remove(id);
+  }
+
+  @Delete(':id/category/:categoryId')
+  deleteCategory(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('categoryId', ParseIntPipe) categoryId: number,
+  ) {
+    return this.productsService.removeCategoryByProduct(id, categoryId);
   }
 }

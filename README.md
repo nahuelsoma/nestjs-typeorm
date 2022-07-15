@@ -438,19 +438,210 @@ npm run migrations:run
 
 ## Clase 18: Relaciones uno a uno
 
+Se crea la relación de user - customer.
+
+Se modifica la entidad de User desde el archivo _user.entity.ts_.
+
+Se modifica la entidad de Customer desde el archivo _customer.entity.ts_.
+
+Se modifica el servicio de User desde el archivo _user.service.ts_.
+
+Se modifica el servicio de Customer desde el archivo _customer.service.ts_.
+
+Se modifica el módulo de User para agregar la importación de las nuevas entidades, en el archivo _users.module.ts_.
+
+En las relaciones uno a uno, no es determinante en donde se enuncia la relación. Puede que por utilidad sea preferible que se encuentre en una u otra tabla, pero por motivos prácticos es exactamente lo mismo.
+
+En este caso, es preferible que la relación quede del lado de User. Además, esta relación puede ser nula.
+
+TypeORM brinda la posibilidad de que la relación sea bidireccional. De esta forma se puede observar la relación en ambas tablas.
+
+Desde el lado de User, quedará de la siguiente forma:
+
+```
+@OneToOne(() => Customer, (customer) => customer.user, { nullable: true })
+@JoinColumn()
+customer: Customer;
+```
+
+Y del lado de Customer:
+
+```
+@OneToOne(() => User, (user) => user.customer, { nullable: true })
+user: User;
+```
+
+Se crea una nueva migración para crear las nuevas tablas.
+
+```
+npm run migrations:generate -- create-user-customer
+```
+
+Se corren las migraciones:
+
+```
+npm run migrations:run
+```
+
 ## Clase 19: Resolviendo la relación uno a uno en el controlador
+
+Se trabaja en el dto de Users desde el archivo _user.dto.ts_ agregando:
+
+```
+@IsOptional()
+@IsPositive()
+@ApiProperty()
+readonly customerId: number;
+```
+
+Se modifica el servicio de User desde el archivo _user.service.ts_ para agregar la relación en el momento de crear un nuevo usuario.
+
+Desde _users.service.ts_ se indica que al momento de buscar un usuario se exponga la información del customer relacionado.
 
 ## Clase 20: Relaciones uno a muchos
 
+Esta relación se hará desde marcas a productos. Una marca puede tener muchos productos, pero un producto solo puede tener una marca.
+
+La relación la debe cargar el lado débil, es decir, el producto.
+
+Se modifica el archivo de la entidad _product.entity.ts_, incorporándose:
+
+```
+@ManyToOne(() => Brand, (brand) => brand.products)
+brand: Brand;
+```
+
+Aquí no se coloca el decorador @JoinColumn() ya que TypeORM ya sabe que la relación la debe cargar la entidad que posea el decorador @ManyToOne().
+
+TypeORM permite tener relaciones bidireccionales (colocándola de manera explicita de ambos lados), por lo que se modifica el archivo de la entidad _brand.entity.ts_, incorporándose:
+
+```
+@OneToMany(() => Product, (product) => product.brand)
+products: Product[];
+```
+
+Se modifica el archivo de servicios de _brands.service.ts_.
+
+Se debe verificar que todas las entidades se importen correctamente en el archivo _products.module.ts_.
+
+Se crea una nueva migración para impactar los cambios en las tablas.
+
+```
+npm run migrations:generate -- create-user-customer
+```
+
+Se corren las migraciones:
+
+```
+npm run migrations:run
+```
+
 ## Clase 21: Resolviendo la relación uno a muchos en el controlador
+
+Se modifica el dto de producto desde el archivo _product.dto.ts_ para agregar el nuevo parámetro:
+
+```
+@IsPositive()
+@IsNotEmpty()
+@ApiProperty()
+readonly brandId: number;
+```
+
+Se modifica el archivo _product.service.ts_ para considerar la nueva variable.
+
+Se modifica el archivo _brand.service.ts_ para considerar la nueva variable.
 
 ## Clase 22: Relaciones muchos a muchos
 
+La relación muchos a muchos necesita de una tabla ternaria. TypeORM realiza este trabajo por detrás, quitando la necesidad de crear esta tabla.
+
+Para configurar una relación muchos a muchos, se usa el decorador _@ManyToMany_.
+
+La relación muchos a muchos se coloca de manera bidireccional, es decir en ambas entidades.
+
+Dentro de la entidad de category, en el archivo _category.entity.ts_, se incorpora:
+
+```
+@ManyToMany(() => Product, (product) => product.categories)
+products: Product[];
+```
+
+Dentro de la entidad de product, en el archivo _product.entity.ts_, se incorpora:
+
+```
+@ManyToMany(() => Category, (category) => category.products)
+@JoinTable()
+categories: Category[];
+```
+
+El decorador _@JoinTable()_ solo debe estar presente en la tabla que cargue con la relación.
+
+También se modifica el archivo _categories.service.ts_.
+
+Se inporta la entidad en el archivo _products.module.ts_.
+
 ## Clase 23: Resolviendo la relación muchos a muchos en el controlador
+
+Se modifica el dto de producto desde el archivo _product.dto.ts_ para agregar el nuevo parámetro:
+
+```
+@isArray()
+@IsNotEmpty()
+@ApiProperty()
+readonly categoriesIds: number[];
+```
+
+Se modifica el archivo _product.service.ts_ para realizar consultas en productos que muestren los resultados de las categorias a las cuales pertenecen.
+
+Se modifica el archivo _categories.service.ts_ para realizar consultas de las categorías que muestren los productos que contiene.
 
 ## Clase 24: Manipulación de arreglos en relaciones muchos a muchos
 
+Se crean dos nuevos endpoints desde _product.controller.ts_.
+
+El primer controller es para eliminar una categoria ya existente en un producto:
+
+```
+@Delete(':id/category/:categoryId')
+```
+
+El segundo controller es para agregar una nueva categoria en un producto:
+
+```
+@Put(':id/category/:categoryId')
+```
+
+Ambos controladores requieren solo del parametro incorporado en la url, por lo que no es necesario enviar un body en la petición.
+
+La logica de cada endpoint se genera en el archivo _product.service.ts_:
+
+- Para eliminar una categoria del producto:
+
+```
+      removeCategoryByProduct()
+```
+
+- Para agregar una categoria del producto:
+
+```
+      addCategoryToProduct()
+```
+
 ## Clase 25: Relaciones muchos a muchos personalizadas
+
+Para crear relaciones muchos a muchos personalizadas, TypeORM indica que es necesario crear la tabla ternaria que manejará esta relación.
+
+La relación muchos a muchos personalizada se realiza entre las entidades de Product y Order, en donde muchos productos pueden pertenecer a muchas ordenes de compra.
+
+Además, se agrega una columna extra para indicar cuantos productos se agregan a una orden de compra.
+
+Se trabaja inicialmente sobre el archivo _order.entity.ts_ para crear todos los parametros de la entidad.
+
+Se agrega una relacion uno a muchos entre Customer y Orders en el archivo _customer.entity.ts_ como se vió anteriormente.
+
+Se crea la entidad ternaria para relacionar orders y products con el nombre de _order-item.entity.ts_.
+
+Se importan ambas nuevas entidades al archivo _users.module.ts_.
 
 ## Clase 26: Resolviendo la relación muchos a muchos personalizada en el controlador
 

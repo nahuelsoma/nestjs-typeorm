@@ -22,7 +22,7 @@ const API_KEY_PROD = 'PROD1212121SA';
           username: user,
           password,
           database: dbName,
-          synchronize: false, // Synchronize database conection for table creation in dev mode. MUST BE false IN PROD MODE!
+          synchronize: true, // Synchronize database conection for table creation in dev mode. MUST BE false IN PROD MODE!
           autoLoadEntities: true, // Entities must be auto loaded
         };
       },
