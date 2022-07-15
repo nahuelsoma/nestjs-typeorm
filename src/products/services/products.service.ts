@@ -4,12 +4,16 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm'; // import for database connection
-import { Repository } from 'typeorm'; // import for database connection
+import { Repository, Between, FindOptionsWhere } from 'typeorm'; // import for database connection
 
 import { Product } from './../entities/product.entity';
 import { Category } from './../entities/category.entity';
 import { Brand } from '../entities/brand.entity';
-import { CreateProductDto, UpdateProductDto } from './../dtos/products.dtos';
+import {
+  CreateProductDto,
+  FilterProductsDto,
+  UpdateProductDto,
+} from './../dtos/products.dtos';
 
 @Injectable()
 export class ProductsService {
@@ -19,8 +23,27 @@ export class ProductsService {
     @InjectRepository(Category) private categoryRepo: Repository<Category>,
   ) {}
 
-  findAll() {
+  findAll(params?: FilterProductsDto) {
     // Use repository to find all info in this table
+    if (params) {
+      const where: FindOptionsWhere<Product> = {};
+      const { limit, offset } = params;
+      const { maxPrice, minPrice } = params;
+      if (minPrice && maxPrice) {
+        if (maxPrice < minPrice) {
+          throw new ConflictException(
+            `maxPrice (${maxPrice}) must be higher than minPrice (${minPrice})`,
+          );
+        }
+        where.price = Between(minPrice, maxPrice);
+      }
+      return this.productRepo.find({
+        relations: ['brand'],
+        where,
+        take: limit,
+        skip: offset,
+      });
+    }
     return this.productRepo.find({
       relations: ['brand'],
     });

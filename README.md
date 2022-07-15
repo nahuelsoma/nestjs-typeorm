@@ -694,11 +694,137 @@ Se crean los endpoints para dicho CRUD desde el archivo _order-item.controller.t
 
 ## Clase 27: Paginación
 
+La paginación se realiza en el endpoint de /products.
+
+Para ello se edita el archivo _products.controller.ts_ y la consulta de get a todos los productos en el archivo _products.service.ts_.
+
+Se crea un dto para gestionar el filtro de productos dentro del mismo dto de productos, en el archivo _products.dtos.ts_.
+
+```
+export class FilterProductsDto {
+  @IsOptional()
+  @IsPositive()
+  @ApiProperty()
+  limit: number;
+
+  @IsOptional()
+  @Min(0)
+  @ApiProperty()
+  offset: number;
+}
+```
+
+También se activa la transformación implicita de query params desde string a number siempre que se obtenga una cadena de caracteres que se pueda representar como number. Esto se configura desde el archivo _main.ts_.
+
+```
+transformOptions: {
+  enableImplicitConversion: true,
+},
+```
+
 ## Clase 28: Filtrando precios con operadores
+
+En la documentación de TypeORM se puede ver todas las opciones de filtrado posibles:
+
+https://orkhan.gitbook.io/typeorm/docs/find-options
+
+En este caso se emplea el método _betwween_ para filtrar los productos con precios entre dos valores numéricos.
+
+Para ello se agregan dos elementos más al dto de productos.
+
+```
+  @IsOptional()
+  @IsPositive()
+  minPrice: number;
+
+  @ValidateIf((item) => item.minPrice)
+  @IsPositive()
+  maxPrice: number;
+```
+
+Para exponer la funcionalidad se edita el archivo _products.controller.ts_ y la consulta de get a todos los productos.
+
+La lógica se incorpora en el archivo _products.service.ts_ a través del método _Between_.
 
 ## Clase 29: Agregando indexadores
 
+Los indexadores se utilizan para optimizar una búsqueda a través de uno o mas atributos, por defecto el campo _id_ se encuentra indexado.
+
+Solo se debe indexar aquellos campos crìticos, ya que si todo es prioritario, al final nada lo es.
+
+Este aumento en la velocidad de consulta se comienza a notar en bases de datos con una gran cantidad de información almacenada. En bases de datos pequeñas no se aprecia el cambio.
+
+La propiedad Index se define dentro de la entidad, con el decorador @Index.
+
+En este caso se indexa el precio de la entidad Product en el archivo _product.entity.ts_:
+
+```
+@Index()
+@Column({ type: 'int' })
+price: number;
+```
+
+De esta forma las consultas que se realicen al precio se van a realizar de una forma más rápida que el resto de las consultas generales.
+
+Para indexar consultas de multiples parámetros, por ejemplo _price_ y _stock_, el decorador @Index se le coloca a toda la tabla y se enuncia de la siguiente forma:
+
+```
+@Entity({ name: 'products' })
+@Index(['price', 'stock'])
+export class Product {
+...
+```
+
 ## Clase 30: Modificando el naming
+
+Las variables en bases de datos, preferentemente no deben contener caracteres especiales, y las letras mayúsculas corrompen esta indicación. Para ello se utiliza el naming para renombrar las variables nombradas en cammel case dentro de JavaScript a lowercase en bases de datos.
+
+El naming en Nest se realiza desde las entidades, en los archivos _\*.entity.ts_.
+
+Para relaciones uno a uno:
+
+```
+@OneToOne(() => Customer, (customer) => customer.user, { nullable: true })
+@JoinColumn({ name: 'customer_id' })   <------
+customer: Customer;
+```
+
+Para relaciones uno a muchos:
+
+```
+@ManyToOne(() => Brand, (brand) => brand.products)
+@JoinColumn({ name: 'brand_id' })  <------
+brand: Brand;
+```
+
+Para relaciones muchos a muchos manejadas por TypeORM:
+
+```
+@ManyToMany(() => Category, (category) => category.products)
+@JoinTable({
+  name: 'product_has_categories', <------ table name
+  joinColumn: {
+    name: 'product_id', <------ this file (entity, table) column name
+  },
+  inverseJoinColumn: {
+    name: 'category_id', <------ other table column name
+  },
+})
+categories: Category[];
+```
+
+Para relaciones muchos a muchos personalizadas, el manejo de la tabla terciaria se gestiona como con relaciones uno a muchos.
+
+Para columnas de fecha de creación y/o modificación:
+
+```
+@CreateDateColumn({
+  name: 'create_at',  <------
+  type: 'timestamptz',
+  default: () => 'CURRENT_TIMESTAMP',
+})
+createAt: Date;
+```
 
 ## Clase 31: Serializar
 

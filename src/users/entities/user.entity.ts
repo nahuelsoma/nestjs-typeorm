@@ -37,6 +37,6 @@ export class User {
   updateAt: Date;
 
   @OneToOne(() => Customer, (customer) => customer.user, { nullable: true })
-  @JoinColumn() // @JoinColunm must be used only on one side of the relation
+  @JoinColumn({ name: 'customer_id' }) // @JoinColunm must be used only on one side of the relation
   customer: Customer;
 }

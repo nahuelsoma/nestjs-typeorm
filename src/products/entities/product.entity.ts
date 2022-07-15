@@ -7,6 +7,8 @@ import {
   ManyToOne, // for many to one relation
   ManyToMany, // for many to many relation
   JoinTable, // for many to many relation
+  Index,
+  JoinColumn,
 } from 'typeorm';
 // PrimaryGeneratedColumn is used to auto generate the primary key (id)
 // Column is used to generate a new column
@@ -16,6 +18,7 @@ import { Brand } from './brand.entity'; // to perform a many to one relationship
 import { Category } from './category.entity'; // to perform a many to many relationship
 
 @Entity({ name: 'products' })
+@Index(['price', 'stock'])
 export class Product {
   @PrimaryGeneratedColumn()
   id: number;
@@ -27,6 +30,7 @@ export class Product {
   @Column({ type: 'text' })
   description: string;
 
+  @Index()
   @Column({ type: 'int' })
   price: number;
 
@@ -38,6 +42,7 @@ export class Product {
 
   // Add creation date
   @CreateDateColumn({
+    name: 'create_at',
     type: 'timestamptz', // Add timestamp with time zone
     default: () => 'CURRENT_TIMESTAMP',
   })
@@ -45,15 +50,26 @@ export class Product {
 
   // Add modified date
   @UpdateDateColumn({
+    name: 'update_at',
     type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP',
   })
   updateAt: Date;
 
   @ManyToOne(() => Brand, (brand) => brand.products)
+  @JoinColumn({ name: 'brand_id' })
   brand: Brand;
 
   @ManyToMany(() => Category, (category) => category.products)
-  @JoinTable() // Must be present at only one of the two entities
+  @JoinTable({
+    // Must be present at only one of the two entities
+    name: 'product_has_categories', // table name
+    joinColumn: {
+      name: 'product_id', // this file (entity, table) column name
+    },
+    inverseJoinColumn: {
+      name: 'category_id', // other table column name
+    },
+  })
   categories: Category[];
 }
