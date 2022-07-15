@@ -645,6 +645,51 @@ Se importan ambas nuevas entidades al archivo _users.module.ts_.
 
 ## Clase 26: Resolviendo la relación muchos a muchos personalizada en el controlador
 
+Se crea el dto de orders en el archivo _orders.dto.ts_.
+
+Se crean el servicio y el controlador para las ordenes de compra:
+
+```
+nest g s users/services/orders --flat
+nest g co users/controllers/orders --flat
+```
+
+Se crea toda la lógica de CRUD en el servicio de orders en el archivo _orders.service.ts_.
+
+Se crean los endpoints para dicho CRUD desde el archivo _orders.controller.ts_.
+
+Para gestionar los porductos dentro de cada orden, se crea un nuevo dto, el _order-item.dto.ts_.
+
+```
+export class CreateOrderItemDto {
+  @IsPositive()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly orderId: number;
+
+  @IsPositive()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly productId: number;
+
+  @IsPositive()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly quantity: number;
+}
+```
+
+Se crean el servicio y el controlador para las relaciones entre ordenes de compra y productos:
+
+```
+nest g s users/services/order-item --flat
+nest g co users/controllers/order-item --flat
+```
+
+Se crea toda la lógica de CRUD en el servicio de orders en el archivo _order-item.service.ts_.
+
+Se crean los endpoints para dicho CRUD desde el archivo _order-item.controller.ts_.
+
 # 6. Consultas
 
 ## Clase 27: Paginación
