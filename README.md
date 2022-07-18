@@ -828,8 +828,70 @@ createAt: Date;
 
 ## Clase 31: Serializar
 
+Serializas se refiere a transformar la información antes de que nuestro controlador la retorne al servicio.
+
+Es posible excluir o agregar cierta información.
+
+Para ello se edita el archivo _main.ts_.
+
+```
+app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+```
+
+Se realiza la serialización para excluir información en el archivo _order-item-entity.ts_.
+
+Se realiza la serialización para excluir, agregar y crear nueva información en el archivo _order-entity.ts_.
+
+En el caso de aplicar la serialización para realizar cálculos con mucha cantidad de información, puede que el rendimiento de la API no sea el mejor. Es recomendable realizar una consulta sql para operar todos los valores directamente desde la base de datos.
+
 # 7. Próximos pasos
 
 ## Clase 32: Cómo solucionar una referencia circular entre módulos
+
+Solución 1: entidades en un Global Module
+
+Una de las soluciones es poner todas las entidades de tu proyecto en el DatabaseModule de manera global haciendo que cada uno de los demás módulos pueda usar estas entidades sin tener problemas de referencia circular.
+
+Solución 2: Referencia directa
+
+Una de las formas que tiene NestJS para resolver la referencia circular es tener una referencia directa. Por ejemplo, si AService y BService dependen el uno del otro, ambos lados de la relación pueden usar @Inject () y la utilidad forwardRef () para resolver la dependencia circular, ejemplo:
+
+```
+@Injectable()
+export class AService {
+  constructor(
+    @Inject(forwardRef(() => BService ))
+    private service: BService ,
+  ) {}
+}
+```
+
+De la misma manera en el otro servicio.
+
+```
+@Injectable()
+export class BService {
+  constructor(
+    @Inject(forwardRef(() => AService ))
+    private service: AService ,
+  ) {}
+}
+```
+
+También es posible aplicar lo mismo entre módulos:
+
+```
+@Module({
+  imports: [forwardRef(() => AModule)],
+})
+export class BModule{}
+```
+
+```
+@Module({
+  imports: [forwardRef(() => BModule)],
+})
+export class AModule{}
+```
 
 ## Clase 33: Continúa con el Curso de NestJS: Autenticación con Passport y JWT
